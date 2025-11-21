@@ -1,0 +1,22 @@
+### List all messages
+GET http://localhost:3000/messages
+
+### Create a new message
+POST http://localhost:3000/messages
+Content-Type: application/json
+
+{
+    "content": "Hello, world!"
+}
+
+
+### Create a new message(숫자 입력 시 에러 발생)
+POST http://localhost:3000/messages
+Content-Type: application/json
+
+{
+    "content": 123
+}
+
+### Get a specific message
+GET http://localhost:3000/messages/:id
