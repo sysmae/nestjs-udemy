@@ -19,4 +19,7 @@ Content-Type: application/json
 }
 
 ### Get a specific message
-GET http://localhost:3000/messages/:id
+GET http://localhost:3000/messages/12
+
+### Get a specific message(없는 ID 입력 시 에러 발생)
+GET http://localhost:3000/messages/123
