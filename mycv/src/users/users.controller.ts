@@ -1,4 +1,4 @@
-import { Body,Controller, Post, Get, Patch,Delete, Param, Query, NotFoundException} from '@nestjs/common';
+import { Body,Controller, Post, Get, Patch,Delete, Param, Query, NotFoundException, UseInterceptors, ClassSerializerInterceptor} from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -14,6 +14,7 @@ export class UsersController {
   }
 
   // 1. 와일드카드(:id)를 사용하여 경로 설정
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get('/:id')
   async findUser(@Param('id') id: string) {
     // 1. 서비스 호출 (비동기 처리)
