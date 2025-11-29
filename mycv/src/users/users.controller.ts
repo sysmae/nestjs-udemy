@@ -8,9 +8,8 @@ import {
   Param,
   Query,
   NotFoundException,
-  UseInterceptors,
-  ClassSerializerInterceptor,
   Session,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
@@ -20,6 +19,7 @@ import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -29,17 +29,14 @@ export class UsersController {
     private readonly authService: AuthService,
   ) {}
 
-  // @Get('/whoami')
-  // whoAmI(@Session() session: any) {
-  //   return this.usersService.findOne(session.userId);
-  // }
-
   @Get('/whoami')
+  @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
     return user;
   }
 
   @Post('/signout')
+  @UseGuards(AuthGuard)
   signOut(@Session() session: any) {
     session.userId = null;
   }
@@ -56,7 +53,7 @@ export class UsersController {
     // 사용자 정보 반환
     return user;
   }
-  ㅔ;
+
   // 2. 로그인 핸들러
   @Post('/signin')
   async signin(@Body() body: CreateUserDto, @Session() session: any) {
