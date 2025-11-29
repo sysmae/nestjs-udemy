@@ -26,16 +26,32 @@ export class UsersController {
 //     return session.color;
 //   }
 
+// 1. 회원가입 핸들러
   @Post('/signup')
-  createUser(@Body() body: CreateUserDto) {
-    return this.authService.signup(body.email, body.password);
+  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+    // AuthService 호출 (비동기)
+    const user = await this.authService.signup(body.email, body.password);
+    
+    // 핵심: 세션에 사용자 ID 저장
+    session.userId = user.id;
+    
+    // 사용자 정보 반환
+    return user;
   }
 
+  // 2. 로그인 핸들러
   @Post('/signin')
-  signin(@Body() body: CreateUserDto) {
-    return this.authService.signin(body.email, body.password);
+  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+    // AuthService 호출 (비동기)
+    const user = await this.authService.signin(body.email, body.password);
+    
+    // 핵심: 세션에 사용자 ID 저장
+    session.userId = user.id;
+    
+    // 사용자 정보 반환
+    return user;
   }
-
+  
   // 1. 와일드카드(:id)를 사용하여 경로 설정
   @Get('/:id')
   async findUser(@Param('id') id: string) {

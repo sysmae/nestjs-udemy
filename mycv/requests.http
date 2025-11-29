@@ -16,6 +16,16 @@ content-type: application/json
     "password": "123456"
 }
 
+### Create a new user 3
+POST http://localhost:3000/auth/signup
+content-type: application/json
+
+{
+    "email": "test3@gmail.com",
+    "password": "123456"
+}
+
+
 
 ### Signin user 2
 POST http://localhost:3000/auth/signin
@@ -25,6 +35,18 @@ content-type: application/json
     "email": "test2@gmail.com",
     "password": "123456"
 }
+
+
+### Signin user 3
+POST http://localhost:3000/auth/signin
+content-type: application/json
+
+{
+    "email": "test3@gmail.com",
+    "password": "123456"
+}
+
+
 
 ### Get user with id 1
 GET http://localhost:3000/auth/1
