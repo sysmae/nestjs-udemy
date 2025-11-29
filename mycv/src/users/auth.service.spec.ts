@@ -110,19 +110,30 @@ describe('AuthService', () => {
     ).rejects.toThrow(NotFoundException);
   });
 
-  // [신규/수정] 비밀번호 불일치 시 에러 발생 테스트
-  it('throws if an invalid password is provided', async () => {
-    // 1. Mock 재정의: 사용자가 존재하는 상황 연출
-    // DB에 'laskdjf'라는 해시된 비밀번호를 가진 유저가 있다고 가정한다.
-    fakeUsersService.find = () =>
-      Promise.resolve([
-        { email: 'asdf@asdf.com', password: 'laskdjf' } as User,
-      ]);
+  // // [신규/수정] 비밀번호 불일치 시 에러 발생 테스트
+  // it('throws if an invalid password is provided', async () => {
+  //   // 1. Mock 재정의: 사용자가 존재하는 상황 연출
+  //   // DB에 'laskdjf'라는 해시된 비밀번호를 가진 유저가 있다고 가정한다.
+  //   fakeUsersService.find = () =>
+  //     Promise.resolve([
+  //       { email: 'asdf@asdf.com', password: 'laskdjf' } as User,
+  //     ]);
 
-    // 2. 검증: 틀린 비밀번호 입력 시 BadRequestException 발생 확인
-    // 입력한 비밀번호('passowrd')와 저장된 비밀번호('laskdjf')가 다르므로 에러가 나야 한다.
+  //   // 2. 검증: 틀린 비밀번호 입력 시 BadRequestException 발생 확인
+  //   // 입력한 비밀번호('passowrd')와 저장된 비밀번호('laskdjf')가 다르므로 에러가 나야 한다.
+  //   await expect(
+  //     service.signin('laskdjf@alskdfj.com', 'passowrd'),
+  //   ).rejects.toThrow(BadRequestException);
+  // });
+
+  // 3. 비밀번호 불일치 방지 테스트
+  it('throws if an invalid password is provided', async () => {
+    // [설정] 정상 가입 (비밀번호: 'password')
+    await service.signup('laskdjf@alskdfj.com', 'password');
+
+    // [검증] 틀린 비밀번호('laksdlfkj')로 로그인 시도 -> BadRequestException 발생 예상
     await expect(
-      service.signin('laskdjf@alskdfj.com', 'passowrd'),
+      service.signin('laskdjf@alskdfj.com', 'laksdlfkj'),
     ).rejects.toThrow(BadRequestException);
   });
 
