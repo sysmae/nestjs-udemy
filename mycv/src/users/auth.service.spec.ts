@@ -9,16 +9,28 @@ describe('AuthService', () => {
 
   // 1. Partial 타입을 사용하여 타입 안전성 확보
   let fakeUsersService: Partial<UsersService>;
-
   beforeEach(async () => {
-    // 2. 가짜 객체 구현
+    // 1. 인메모리 데이터베이스 역할 (배열)
+    const users: User[] = [];
+
     fakeUsersService = {
+      // 2. find 구현: 배열에서 검색
       find: (email: string) => {
-        return Promise.resolve([]); // 빈 배열(중복 없음) 반환
+        // 실제 로직과 유사하게 필터링 수행
+        const filteredUsers = users.filter((u) => u.email === email);
+        return Promise.resolve(filteredUsers);
       },
+
+      // 3. create 구현: 배열에 추가
       create: (email: string, password: string) => {
-        // 3. 'as User'를 사용하여 엔터티 메서드 구현 강제 무시
-        return Promise.resolve({ id: 1, email, password } as User);
+        const user = {
+          id: Math.floor(Math.random() * 99999), // 랜덤 ID 생성
+          email,
+          password,
+        } as User;
+
+        users.push(user); // 저장
+        return Promise.resolve(user); // 반환
       },
     };
 
@@ -63,13 +75,24 @@ describe('AuthService', () => {
     expect(hash).toBeDefined();
   });
 
-  it('throws an error if user signs up with email that is in use', async () => {
-    // 3. [핵심] 이 테스트 안에서만 find 메서드 재정의 (실패 케이스용)
-    fakeUsersService.find = (email) =>
-      Promise.resolve([{ id: 1, email, password: 'pw' } as User]);
+  // it('throws an error if user signs up with email that is in use', async () => {
+  //   // 3. [핵심] 이 테스트 안에서만 find 메서드 재정의 (실패 케이스용)
+  //   fakeUsersService.find = (email) =>
+  //     Promise.resolve([{ id: 1, email, password: 'pw' } as User]);
 
-    // 이제 signup을 호출하면 find가 위의 함수를 실행하여 에러를 유발함
-    await expect(service.signup('test@test.com', 'asdf')).rejects.toThrow(
+  //   // 이제 signup을 호출하면 find가 위의 함수를 실행하여 에러를 유발함
+  //   await expect(service.signup('test@test.com', 'asdf')).rejects.toThrow(
+  //     BadRequestException,
+  //   );
+  // });
+
+  it('throws if signup is called with an email that is in use', async () => {
+    // 1. 첫 번째 가입 (성공, 배열에 저장됨)
+    await service.signup('test@test.com', 'pw');
+
+    // 2. 두 번째 가입 시도 (실패해야 함)
+    // 인메모리 find가 위에서 저장된 유저를 발견하고 에러를 던질 것임
+    await expect(service.signup('test@test.com', 'pw')).rejects.toThrow(
       BadRequestException,
     );
   });
@@ -103,34 +126,47 @@ describe('AuthService', () => {
     ).rejects.toThrow(BadRequestException);
   });
 
-  // 임시 테스트 (나중에 삭제)
-  it('logs a valid hashed password', async () => {
-    // signup 메서드는 실제 scrypt를 돌려서 유효한 해시를 생성함
-    const user = await service.signup('test@test.com', 'mypassword');
-    console.log(user.password); // 콘솔에 찍힌 값을 복사한다!
-  });
+  // // 임시 테스트 (나중에 삭제)
+  // it('logs a valid hashed password', async () => {
+  //   // signup 메서드는 실제 scrypt를 돌려서 유효한 해시를 생성함
+  //   const user = await service.signup('test@test.com', 'mypassword');
+  //   console.log(user.password); // 콘솔에 찍힌 값을 복사한다!
+  // });
 
+  // it('returns a user if correct password is provided', async () => {
+  //   // 1. Given: 복사한 해시값 준비
+  //   const correctPassword = 'mypassword';
+  //   // (예시) 실제로는 콘솔에서 복사한 값을 넣어야 함
+  //   const validHash =
+  //     '0ac2a7c295d2cdfe.d6eaddab136cb0a281cde16b41e57f101bebe988bef1e7bbcb0a9651a746ed9e';
+
+  //   // 2. Mock 재정의: 유효한 해시를 가진 유저 반환
+  //   fakeUsersService.find = (email) =>
+  //     Promise.resolve([
+  //       {
+  //         id: 1,
+  //         email,
+  //         password: validHash, // [중요] 여기에 복사한 값을 붙여넣기
+  //       } as User,
+  //     ]);
+
+  //   // 3. When: 올바른 비밀번호로 로그인 시도
+  //   const user = await service.signin('test@test.com', correctPassword);
+
+  //   // 4. Then: 유저 객체가 반환되어야 함 (성공)
+  //   expect(user).toBeDefined();
+  // });
+
+  // 리팩토링 후: 매우 직관적인 흐름
   it('returns a user if correct password is provided', async () => {
-    // 1. Given: 복사한 해시값 준비
-    const correctPassword = 'mypassword';
-    // (예시) 실제로는 콘솔에서 복사한 값을 넣어야 함
-    const validHash =
-      '0ac2a7c295d2cdfe.d6eaddab136cb0a281cde16b41e57f101bebe988bef1e7bbcb0a9651a746ed9e';
+    // 1. 회원가입 (데이터 저장됨)
+    await service.signup('test@test.com', 'mypassword');
 
-    // 2. Mock 재정의: 유효한 해시를 가진 유저 반환
-    fakeUsersService.find = (email) =>
-      Promise.resolve([
-        {
-          id: 1,
-          email,
-          password: validHash, // [중요] 여기에 복사한 값을 붙여넣기
-        } as User,
-      ]);
+    // 2. 로그인 (저장된 데이터로 검증)
+    const user = await service.signin('test@test.com', 'mypassword');
 
-    // 3. When: 올바른 비밀번호로 로그인 시도
-    const user = await service.signin('test@test.com', correctPassword);
-
-    // 4. Then: 유저 객체가 반환되어야 함 (성공)
+    // 3. 검증
     expect(user).toBeDefined();
+    expect(user.email).toEqual('test@test.com');
   });
 });
