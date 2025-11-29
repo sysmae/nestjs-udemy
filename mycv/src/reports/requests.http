@@ -1,0 +1,13 @@
+### Create a new report
+POST http://localhost:3000/reports
+content-type: application/json
+
+{
+  "make": "Hyundai",
+  "model": "Sonata",
+  "year": 2020,
+  "mileage": 50000,
+  "lng": 127.0,
+  "lat": 37.5,
+  "price": 15000
+}

@@ -25,6 +25,14 @@ content-type: application/json
     "password": "123456"
 }
 
+### Create a new user 4
+POST http://localhost:3000/auth/signup
+content-type: application/json
+
+{
+    "email": "test4@gmail.com",
+    "password": "123456"
+}
 
 
 ### Signin user 2
@@ -45,6 +53,17 @@ content-type: application/json
     "email": "test3@gmail.com",
     "password": "123456"
 }
+
+### Signin user 4
+POST http://localhost:3000/auth/signin
+content-type: application/json
+
+{
+    "email": "test4@gmail.com",
+    "password": "123456"
+}
+
+
 
 
 
