@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
+import { NotFoundException } from '@nestjs/common';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -92,11 +93,42 @@ describe('UsersController', () => {
 
   // 이메일 검색 테스트
   it('findAllUsers returns a list of users with the given email', async () => {
-    // 1. 컨트롤러 메서드 호출
-    const users = await controller.findAllUsers('test@test.com');
+    // 1. Act: 컨트롤러 메서드 호출
+    const users = await controller.findAllUsers('asdf@asdf.com');
 
-    // 2. 검증
-    expect(users.length).toEqual(1); // 배열 길이가 1이어야 함
-    expect(users[0].email).toEqual('test@test.com'); // 이메일이 일치해야 함
+    // 2. Assert: 검증
+    // beforeEach에서 설정한 fakeUsersService.find는 항상 1개의 유저를 반환하도록 되어 있음
+    expect(users.length).toEqual(1);
+    expect(users[0].email).toEqual('asdf@asdf.com'); // Mock이 입력받은 이메일을 그대로 돌려주기로 약속했으므로
+  });
+
+  it('findUser throws an error if user with given id is not found', async () => {
+    // 1. Mock 재정의: 사용자를 찾지 못하는 상황 연출
+    fakeUsersService.findOne = (id: number) => {
+      return Promise.resolve(null); // null 반환 = 유저 없음
+    };
+
+    // 2. 검증: 컨트롤러 호출 시 NotFoundException 발생 확인
+    await expect(controller.findUser('1')).rejects.toThrow(NotFoundException);
+  });
+
+  // [신규] 로그인 시 세션 업데이트 검증 테스트
+  it('signin updates session object and returns user', async () => {
+    // 1. Arrange (준비)
+    // 세션 객체 초기화: 변경 여부를 확실히 알기 위해 엉뚱한 값(-10)을 넣어둠
+    const session: any = { userId: -10 };
+    const body = { email: 'test@test.com', password: 'password' };
+
+    // 2. Act (실행)
+    // 컨트롤러에 body와 session 객체(참조)를 전달
+    const user = await controller.signin(body, session);
+
+    // 3. Assert (검증)
+
+    // 검증 A: 반환된 유저의 ID가 Mock이 준 1과 같은가?
+    expect(user.id).toEqual(1);
+
+    // 검증 B: 세션 객체의 userId가 -10에서 1로 변경되었는가? (핵심!)
+    expect(session.userId).toEqual(1);
   });
 });
