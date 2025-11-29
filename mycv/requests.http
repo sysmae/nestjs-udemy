@@ -68,8 +68,8 @@ content-type: application/json
     "email": "updated@gmail.com"
 }
 
-### Set a Color
-GET http://localhost:3000/auth/colors/red
+### Get the current user
+GET http://localhost:3000/auth/whoami
 
-### Get the Color
-GET http://localhost:3000/auth/colors
+### Signout user
+POST http://localhost:3000/auth/signout
