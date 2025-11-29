@@ -12,20 +12,20 @@ export class UsersController {
 
   constructor(private readonly usersService: UsersService, private readonly authService: AuthService) {}
 
-// 실험용 1: 세션에 색상 저장하기
-  // GET /auth/colors/red 요청이 오면 세션에 'red'를 저장
-  @Get('/colors/:color')
-  setColor(@Param('color') color: string, @Session() session: any) {
-    session.color = color;
-  }
+//   // 실험용 1: 세션에 색상 저장하기
+//   // GET /auth/colors/red 요청이 오면 세션에 'red'를 저장
+//   @Get('/colors/:color')
+//   setColor(@Param('color') color: string, @Session() session: any) {
+//     session.color = color;
+//   }
 
-  // 실험용 2: 세션에서 색상 가져오기
-  // GET /auth/colors 요청이 오면 저장된 색상을 반환
-  @Get('/colors')
-  getColor(@Session() session: any) {
-    return session.color;
-  }
-  
+//   // 실험용 2: 세션에서 색상 가져오기
+//   // GET /auth/colors 요청이 오면 저장된 색상을 반환
+//   @Get('/colors')
+//   getColor(@Session() session: any) {
+//     return session.color;
+//   }
+
   @Post('/signup')
   createUser(@Body() body: CreateUserDto) {
     return this.authService.signup(body.email, body.password);
