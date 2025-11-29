@@ -10,13 +10,6 @@ describe('Authentication System', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
-    // [1. DB 삭제 로직 추가]
-    // 테스트용 DB 파일이 존재하면 삭제하여 초기화한다.
-    const fs = require('fs');
-    if (fs.existsSync('test.sqlite')) {
-      fs.unlinkSync('test.sqlite');
-    }
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -42,5 +35,30 @@ describe('Authentication System', () => {
         expect(id).toBeDefined(); // ID가 생성되었는지
         expect(email).toEqual(email); // 이메일이 일치하는지
       });
+  });
+
+  // [신규] 회원가입 후 내 정보 확인 시나리오
+  it('signup as a new user then get the currently logged in user', async () => {
+    const email = 'test@test.com';
+
+    // 1. 회원가입 요청 (Signup)
+    const res = await request(app.getHttpServer())
+      .post('/auth/signup')
+      .send({ email, password: 'password' })
+      .expect(201); // 생성 성공 확인
+
+    // 2. 쿠키 추출 (Extract Cookie)
+    // response.get('Set-Cookie')는 쿠키 문자열 배열을 반환함
+    const cookie = res.get('Set-Cookie') || [];
+
+    // 3. 내 정보 확인 요청 (WhoAmI)
+    const { body } = await request(app.getHttpServer())
+      .get('/auth/whoami')
+      .set('Cookie', cookie) // [중요] 쿠키를 헤더에 포함시켜 전송
+      .expect(200); // 접근 성공 확인
+
+    // 4. 검증 (Assertion)
+    // 반환된 정보의 이메일이 가입한 이메일과 일치하는지 확인
+    expect(body.email).toEqual(email);
   });
 });
