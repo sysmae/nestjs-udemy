@@ -1,4 +1,17 @@
-import { Body,Controller, Post, Get, Patch,Delete, Param, Query, NotFoundException, UseInterceptors, ClassSerializerInterceptor, Session} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Query,
+  NotFoundException,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  Session,
+} from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -11,8 +24,10 @@ import { CurrentUser } from './decorators/current-user.decorator';
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
-
-  constructor(private readonly usersService: UsersService, private readonly authService: AuthService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly authService: AuthService,
+  ) {}
 
   // @Get('/whoami')
   // whoAmI(@Session() session: any) {
@@ -22,48 +37,48 @@ export class UsersController {
   @Get('/whoami')
   whoAmI(@CurrentUser() user: User) {
     return user;
-  } 
+  }
 
   @Post('/signout')
   signOut(@Session() session: any) {
     session.userId = null;
   }
 
-// 1. 회원가입 핸들러
+  // 1. 회원가입 핸들러
   @Post('/signup')
   async createUser(@Body() body: CreateUserDto, @Session() session: any) {
     // AuthService 호출 (비동기)
     const user = await this.authService.signup(body.email, body.password);
-    
-    // 핵심: 세션에 사용자 ID 저장 
+
+    // 핵심: 세션에 사용자 ID 저장
     session.userId = user.id;
-    
+
     // 사용자 정보 반환
     return user;
   }
-
+  ㅔ;
   // 2. 로그인 핸들러
   @Post('/signin')
   async signin(@Body() body: CreateUserDto, @Session() session: any) {
     // AuthService 호출 (비동기)
     const user = await this.authService.signin(body.email, body.password);
-    
+
     // 핵심: 세션에 사용자 ID 저장
     session.userId = user.id;
-    
+
     // 사용자 정보 반환
     return user;
   }
-  
+
   // 1. 와일드카드(:id)를 사용하여 경로 설정
   @Get('/:id')
   async findUser(@Param('id') id: string) {
     // 1. 서비스 호출 (비동기 처리)
     const user = await this.usersService.findOne(parseInt(id));
-    
+
     // 2. 결과가 null인지 확인 (서비스는 에러를 안 던지므로 여기서 처리)
     if (!user) {
-        throw new NotFoundException('user not found');
+      throw new NotFoundException('user not found');
     }
 
     // 3. 사용자 반환
@@ -98,10 +113,8 @@ export class UsersController {
    */
   @Patch('/:id')
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-      // 1. id는 URL 파라미터이므로 문자열 -> 숫자로 변환 (parseInt)
-      // 2. body는 UpdateUserDto를 통과하여 유효성이 검증된 객체
-      return this.usersService.update(parseInt(id), body);
+    // 1. id는 URL 파라미터이므로 문자열 -> 숫자로 변환 (parseInt)
+    // 2. body는 UpdateUserDto를 통과하여 유효성이 검증된 객체
+    return this.usersService.update(parseInt(id), body);
   }
 }
-
-
