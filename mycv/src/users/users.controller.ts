@@ -1,19 +1,39 @@
-import { Body,Controller, Post, Get, Patch,Delete, Param, Query, NotFoundException, UseInterceptors, ClassSerializerInterceptor} from '@nestjs/common';
+import { Body,Controller, Post, Get, Patch,Delete, Param, Query, NotFoundException, UseInterceptors, ClassSerializerInterceptor, Session} from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class UsersController {
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService, private readonly authService: AuthService) {}
 
+// 실험용 1: 세션에 색상 저장하기
+  // GET /auth/colors/red 요청이 오면 세션에 'red'를 저장
+  @Get('/colors/:color')
+  setColor(@Param('color') color: string, @Session() session: any) {
+    session.color = color;
+  }
+
+  // 실험용 2: 세션에서 색상 가져오기
+  // GET /auth/colors 요청이 오면 저장된 색상을 반환
+  @Get('/colors')
+  getColor(@Session() session: any) {
+    return session.color;
+  }
+  
   @Post('/signup')
   createUser(@Body() body: CreateUserDto) {
-    return this.usersService.create(body.email, body.password);
+    return this.authService.signup(body.email, body.password);
+  }
+
+  @Post('/signin')
+  signin(@Body() body: CreateUserDto) {
+    return this.authService.signin(body.email, body.password);
   }
 
   // 1. 와일드카드(:id)를 사용하여 경로 설정
@@ -64,3 +84,5 @@ export class UsersController {
       return this.usersService.update(parseInt(id), body);
   }
 }
+
+
