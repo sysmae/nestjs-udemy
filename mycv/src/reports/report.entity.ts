@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from '../users/user.entity';
 
 @Entity()
 export class Report {
@@ -33,4 +34,8 @@ export class Report {
   // 8. 주행 거리 (Mileage)
   @Column()
   mileage: number;
+
+  // (1) 대상 엔티티, (2) 대상 엔티티에서 나를 가리키는 속성
+  @ManyToOne(() => User, (user) => user.reports)
+  user: User;
 }

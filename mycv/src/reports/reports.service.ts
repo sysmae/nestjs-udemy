@@ -1,25 +1,26 @@
+// src/reports/reports.service.ts
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from './report.entity';
 import { CreateReportDto } from './dtos/create-report.dto';
+import { User } from '../users/user.entity'; // User 임포트
 
 @Injectable()
 export class ReportsService {
-  constructor(
-    // 1. 의존성 주입: Report 엔터티 전용 리포지토리를 요청
-    @InjectRepository(Report)
-    private repo: Repository<Report>,
-  ) {}
+  constructor(@InjectRepository(Report) private repo: Repository<Report>) {}
 
-  // 2. 생성 로직: DTO를 받아 저장
-  create(reportDto: CreateReportDto) {
-    // 3. 엔터티 인스턴스 생성 (메모리 상에만 존재)
-    // create()는 DTO 객체를 TypeORM 엔터티 객체로 변환해 줍니다.
+  // User 객체를 두 번째 인자로 받음
+  create(reportDto: CreateReportDto, user: User) {
+    // 1. DTO를 기반으로 리포트 엔티티 생성
     const report = this.repo.create(reportDto);
 
-    // 4. 데이터베이스 저장 (INSERT 쿼리 실행)
-    // save()는 DB에 저장 후, 생성된 ID가 포함된 엔터티를 반환합니다.
+    // 2. 리포트와 유저 연결 (핵심!)
+    // 유저 엔티티 전체를 할당하면 TypeORM이 알아서 처리함
+    report.user = user;
+
+    // 3. 저장
     return this.repo.save(report);
   }
 }
