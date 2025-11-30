@@ -45,23 +45,19 @@ export class ReportsService {
     return this.repo.save(report);
   }
 
-  createEstimate(getEstimateDto: GetEstimateDto) {
+  createEstimate({ make, model, lng, lat, year, mileage }: GetEstimateDto) {
     return this.repo
-      .createQueryBuilder()
-      .select('*')
-      .where('make=:make', { make: getEstimateDto.make })
-      .getRawOne();
-    //   return this.repo
-    //     .createQueryBuilder()
-    //     .select('AVG(price)')
-    //     .where('make = :make', { make: getEstimateDto.make })
-    //     .andWhere('model = :model', { model: getEstimateDto.model })
-    //     .andWhere('lng - :lng BETWEEN -5 AND 5', { lng: getEstimateDto.lng })
-    //     .andWhere('lat - :lat BETWEEN -5 AND 5', { lat: getEstimateDto.lat })
-    //     .andWhere('year - :year BETWEEN -3 AND 3', { year: getEstimateDto.year })
-    //     .andWhere('mileage - :mileage BETWEEN -2000 AND 2000', {
-    //       mileage: getEstimateDto.mileage,
-    //     })
-    //     .getRawOne();
+      .createQueryBuilder('report')
+      .select('AVG(report.price)', 'price') // 4. 평균 가격 선택 및 별칭 지정
+      .where('report.make = :make', { make }) // 1. 기본 필터 (make)
+      .andWhere('report.model = :model', { model }) // 2. 추가 필터 (andWhere 사용)
+      .andWhere('report.lng - :lng BETWEEN -5 AND 5', { lng }) // 경도 ±5도
+      .andWhere('report.lat - :lat BETWEEN -5 AND 5', { lat }) // 위도 ±5도
+      .andWhere('report.year - :year BETWEEN -3 AND 3', { year }) // 연도 ±3년
+      .andWhere('report.approved IS TRUE') // (일반적으로 승인된 리포트만 검색합니다)
+      .orderBy('ABS(report.mileage - :mileage)', 'DESC') // 3. 주행거리 차이로 정렬
+      .setParameters({ mileage }) // orderBy는 파라미터 객체를 받지 않으므로 따로 설정
+      .limit(3) // 상위 3개만 선택
+      .getRawOne(); // 5. 집계된 결과(Raw Data) 하나만 반환
   }
 }
