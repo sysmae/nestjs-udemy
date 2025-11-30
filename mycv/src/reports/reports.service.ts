@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Report } from './report.entity';
 import { CreateReportDto } from './dtos/create-report.dto';
 import { User } from '../users/user.entity'; // User 임포트
+import { GetEstimateDto } from './dtos/get-estimate.dto';
 
 @Injectable()
 export class ReportsService {
@@ -42,5 +43,25 @@ export class ReportsService {
 
     // 4. 저장 및 반환
     return this.repo.save(report);
+  }
+
+  createEstimate(getEstimateDto: GetEstimateDto) {
+    return this.repo
+      .createQueryBuilder()
+      .select('*')
+      .where('make=:make', { make: getEstimateDto.make })
+      .getRawOne();
+    //   return this.repo
+    //     .createQueryBuilder()
+    //     .select('AVG(price)')
+    //     .where('make = :make', { make: getEstimateDto.make })
+    //     .andWhere('model = :model', { model: getEstimateDto.model })
+    //     .andWhere('lng - :lng BETWEEN -5 AND 5', { lng: getEstimateDto.lng })
+    //     .andWhere('lat - :lat BETWEEN -5 AND 5', { lat: getEstimateDto.lat })
+    //     .andWhere('year - :year BETWEEN -3 AND 3', { year: getEstimateDto.year })
+    //     .andWhere('mileage - :mileage BETWEEN -2000 AND 2000', {
+    //       mileage: getEstimateDto.mileage,
+    //     })
+    //     .getRawOne();
   }
 }
