@@ -1,6 +1,6 @@
 // src/reports/reports.service.ts
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Report } from './report.entity';
@@ -21,6 +21,26 @@ export class ReportsService {
     report.user = user;
 
     // 3. 저장
+    return this.repo.save(report);
+  }
+
+  // [핵심 구현] 승인 상태 변경 메서드
+  async changeApproval(id: string, approved: boolean) {
+    // 1. TypeORM 0.3.0 대응: where 절을 명시적으로 사용해야 함
+    // id는 컨트롤러에서 string으로 오지만 DB는 number일 수 있으므로 parseInt로 변환
+    const report = await this.repo.findOne({ where: { id: parseInt(id) } });
+
+    // 2. 예외 처리: 리포트가 없는 경우
+    if (!report) {
+      throw new NotFoundException(
+        '리포트를 찾을 수 없습니다 (Report not found)',
+      );
+    }
+
+    // 3. 속성 업데이트
+    report.approved = approved;
+
+    // 4. 저장 및 반환
     return this.repo.save(report);
   }
 }

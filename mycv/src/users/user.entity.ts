@@ -20,6 +20,10 @@ export class User {
   @Column()
   password: string;
 
+  // [추가] 관리자 여부 (기본값은 false로 설정하여 보안 강화)
+  @Column({ default: false })
+  admin: boolean;
+
   // (1) 대상 엔티티, (2) 대상 엔티티에서 나를 가리키는 속성
   @OneToMany(() => Report, (report) => report.user)
   reports: Report[];
